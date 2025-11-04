@@ -6,6 +6,7 @@ import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import PostScreen from "./screens/PostScreen";
 import LostItemsScreen from "./screens/LostItemsScreen";
+import ItemScreen from "./screens/ItemScreen";
 
 const App = () => {
   return (
@@ -15,6 +16,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<HomeScreen />} />
           <Route path="/items" element={<LostItemsScreen />} />
+          <Route path="/item/:id" element={<ItemScreen />} />
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/post" element={<PostScreen />} />
         </Routes>

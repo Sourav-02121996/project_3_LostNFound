@@ -5,11 +5,11 @@ header {
   z-index: 1000;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(10px);
-  background-color: rgba(33, 37, 41, 0.95) !important;
+  background-color: rgba(33, 37, 41, 0.95);
 }
 
 header .navbar {
-  background: linear-gradient(135deg, #1a1d21 0%, #2d3436 100%) !important;
+  background: linear-gradient(135deg, #1a1d21 0%, #2d3436 100%);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.75rem 0;
   transition: all 0.3s ease;
@@ -19,28 +19,28 @@ header .navbar-brand {
   font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.5px;
-  color: #fff !important;
+  color: #fff;
   transition: all 0.3s ease;
   text-decoration: none;
 }
 
 header .navbar-brand:hover {
-  color: #4ecdc4 !important;
+  color: #4ecdc4;
   transform: scale(1.05);
 }
 
 header .navbar-nav .nav-link {
-  color: rgba(255, 255, 255, 0.85) !important;
+  color: rgba(255, 255, 255, 0.85);
   font-weight: 500;
   margin: 0 0.5rem;
-  padding: 0.5rem 1rem !important;
+  padding: 0.5rem 1rem;
   border-radius: 8px;
   transition: all 0.3s ease;
   position: relative;
 }
 
 header .navbar-nav .nav-link:hover {
-  color: #fff !important;
+  color: #fff;
   background-color: rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
