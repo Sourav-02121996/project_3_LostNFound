@@ -1,0 +1,66 @@
+/* Modern Searchbar Styles */
+.searchbar-container {
+  margin-bottom: 2rem;
+}
+
+.searchbar-group {
+  position: relative;
+  margin: 0;
+}
+
+.search-icon {
+  position: absolute;
+  left: 1.25rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #636e72;
+  font-size: 1.1rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.searchbar-input {
+  padding-left: 3.5rem;
+  padding-right: 1.25rem;
+  padding-top: 0.875rem;
+  padding-bottom: 0.875rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background-color: #ffffff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.searchbar-input:focus {
+  border-color: #4ecdc4;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(78, 205, 196, 0.2);
+  outline: none;
+}
+
+.searchbar-input::placeholder {
+  color: #adb5bd;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .searchbar-container {
+    margin-bottom: 1.5rem;
+  }
+
+  .search-icon {
+    left: 1rem;
+    font-size: 1rem;
+  }
+
+  .searchbar-input {
+    padding-left: 3rem;
+    padding-right: 1rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    font-size: 0.95rem;
+    border-radius: 10px;
+  }
+}
+

@@ -1,10 +1,12 @@
 import React, { useState, useMemo } from "react";
 import { Container, Row, Col, Form, Button, Card } from "react-bootstrap";
 import Item from "../components/Item";
+import Searchbar from "../components/Searchbar";
 import items from "../items";
 import "../styles/screens/LostItemsScreen.css";
 
 const LostItemsScreen = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     location: "",
     dateFound: "",
@@ -24,9 +26,19 @@ const LostItemsScreen = () => {
     return uniqueCategories.sort();
   }, []);
 
-  // Filter items based on selected filters
+  // Filter items based on search term and selected filters
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
+      // Search filter
+      const searchLower = searchTerm.toLowerCase();
+      const matchesSearch =
+        !searchTerm ||
+        item.name.toLowerCase().includes(searchLower) ||
+        item.location.toLowerCase().includes(searchLower) ||
+        item.category.toLowerCase().includes(searchLower) ||
+        item.description.toLowerCase().includes(searchLower);
+
+      // Filter filters
       const matchesLocation =
         !filters.location || item.location === filters.location;
       const matchesDate =
@@ -34,9 +46,9 @@ const LostItemsScreen = () => {
       const matchesCategory =
         !filters.category || item.category === filters.category;
 
-      return matchesLocation && matchesDate && matchesCategory;
+      return matchesSearch && matchesLocation && matchesDate && matchesCategory;
     });
-  }, [filters]);
+  }, [searchTerm, filters]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
@@ -67,6 +79,8 @@ const LostItemsScreen = () => {
             looking for
           </p>
         </div>
+
+        <Searchbar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
 
         <Card className="filter-card">
           <Card.Body className="p-4">
