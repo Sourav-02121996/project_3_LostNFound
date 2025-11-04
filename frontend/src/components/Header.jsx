@@ -12,8 +12,8 @@ const Header = () => {
           <Navbar.Toggle aria-controls="basic-navbar-nav" />
           <Navbar.Collapse id="basic-navbar-nav">
             <Nav className="ms-auto">
-              <Nav.Link href="/post-item">Post an Item</Nav.Link>
-              <Nav.Link href="/category">Category</Nav.Link>
+              <Nav.Link href="/items">Lost Items</Nav.Link>
+              <Nav.Link href="/post">Post an Item</Nav.Link>
               <Nav.Link href="/notifications">
                 <FaBell />
               </Nav.Link>

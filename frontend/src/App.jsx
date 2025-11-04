@@ -5,6 +5,7 @@ import Footer from "./components/Footer";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import PostScreen from "./screens/PostScreen";
+import LostItemsScreen from "./screens/LostItemsScreen";
 
 const App = () => {
   return (
@@ -13,6 +14,7 @@ const App = () => {
       <main className="py-3 main-content">
         <Routes>
           <Route path="/" element={<HomeScreen />} />
+          <Route path="/items" element={<LostItemsScreen />} />
           <Route path="/login" element={<LoginScreen />} />
           <Route path="/post" element={<PostScreen />} />
         </Routes>
