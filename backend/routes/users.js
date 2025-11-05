@@ -1,7 +1,10 @@
 const express = require("express");
 const router = express.Router();
+const bcrypt = require("bcryptjs");
 const { getDb } = require("../config/db");
 const { ObjectId } = require("mongodb");
+
+const SALT_ROUNDS = 10;
 
 // POST /api/users - Create a new user
 router.post("/", async (req, res, next) => {
@@ -15,17 +18,27 @@ router.post("/", async (req, res, next) => {
     const db = await getDb();
     const usersCollection = db.collection("Users");
 
-    const existingUser = await usersCollection.findOne({ email });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const existingUser = await usersCollection.findOne({
+      email: normalizedEmail,
+    });
     if (existingUser) {
       return res.status(409).json({ message: "Email already registered." });
     }
 
+    const newUserData = {
+      nuid: nuid.trim(),
+      name: name.trim(),
+      phone: phone.trim(),
+      email: normalizedEmail,
+    };
+
+    const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
+
     const newUser = {
-      nuid,
-      name,
-      phone,
-      email,
-      password,
+      ...newUserData,
+      passwordHash,
       createdAt: new Date(),
     };
 
@@ -52,13 +65,20 @@ router.post("/login", async (req, res, next) => {
     const db = await getDb();
     const usersCollection = db.collection("Users");
 
-    const user = await usersCollection.findOne({ email, password });
+    const normalizedEmail = email.trim().toLowerCase();
+
+    const user = await usersCollection.findOne({ email: normalizedEmail });
     if (!user) {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid email or password." });
+    }
+
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { passwordHash: _, ...userWithoutPassword } = user;
 
     res.json({
       message: "Login successful.",
@@ -91,7 +111,7 @@ router.get("/profile", async (req, res, next) => {
     }
 
     // Remove password from response
-    const { password: _, ...userWithoutPassword } = user;
+    const { passwordHash: _, ...userWithoutPassword } = user;
 
     res.json(userWithoutPassword);
   } catch (error) {
@@ -116,10 +136,10 @@ router.put("/profile", async (req, res, next) => {
     const usersCollection = db.collection("Users");
 
     const updateData = {};
-    if (nuid) updateData.nuid = nuid;
-    if (name) updateData.name = name;
-    if (phone) updateData.phone = phone;
-    if (email) updateData.email = email;
+    if (nuid) updateData.nuid = nuid.trim();
+    if (name) updateData.name = name.trim();
+    if (phone) updateData.phone = phone.trim();
+    if (email) updateData.email = email.trim().toLowerCase();
 
     if (Object.keys(updateData).length === 0) {
       return res.status(400).json({ message: "No fields to update." });
@@ -160,14 +180,21 @@ router.put("/password", async (req, res, next) => {
     const db = await getDb();
     const usersCollection = db.collection("Users");
 
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId), password: currentPassword });
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) });
     if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const passwordMatches = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!passwordMatches) {
       return res.status(401).json({ message: "Current password is incorrect." });
     }
 
+    const newPasswordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
     const result = await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
-      { $set: { password: newPassword, updatedAt: new Date() } }
+      { $set: { passwordHash: newPasswordHash, updatedAt: new Date() } }
     );
 
     if (result.matchedCount === 0) {
@@ -181,4 +208,3 @@ router.put("/password", async (req, res, next) => {
 });
 
 module.exports = router;
-
