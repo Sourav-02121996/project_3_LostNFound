@@ -1,7 +1,8 @@
-const express = require("express");
+import express from "express";
+import { ObjectId } from "mongodb";
+import { getDb } from "../config/db.js";
+
 const router = express.Router();
-const { getDb } = require("../config/db");
-const { ObjectId } = require("mongodb");
 
 // GET /api/notifications - Get all notifications for a user with pagination
 router.get("/", async (req, res, next) => {
@@ -18,7 +19,6 @@ router.get("/", async (req, res, next) => {
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
-
 
     const totalCount = await notificationsCollection.countDocuments({ userId });
 
@@ -180,7 +180,7 @@ router.post("/", async (req, res, next) => {
       itemImage: itemImage || null,
       itemCategory: itemCategory || null,
       dateFound: dateFound || null,
-      type: type || "new", 
+      type: type || "new",
       read: false,
       createdAt: new Date(),
     };
@@ -197,4 +197,4 @@ router.post("/", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

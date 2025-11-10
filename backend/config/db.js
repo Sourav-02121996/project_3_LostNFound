@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require("mongodb");
+import { MongoClient, ServerApiVersion } from "mongodb";
 
 const uri = process.env.MONGODB_URI;
 
@@ -16,7 +16,7 @@ const client = new MongoClient(uri, {
 
 let isConnected = false;
 
-async function getDb() {
+export async function getDb() {
   if (!isConnected) {
     await client.connect();
     isConnected = true;
@@ -24,5 +24,3 @@ async function getDb() {
   const dbName = process.env.DB_NAME || "LostNFound";
   return client.db(dbName);
 }
-
-module.exports = { getDb };

@@ -1,17 +1,12 @@
-const jwt = require("jsonwebtoken");
-const { ObjectId } = require("mongodb");
-const { getDb } = require("../config/db");
+import jwt from "jsonwebtoken";
+import { ObjectId } from "mongodb";
+import { getDb } from "../config/db.js";
 
 const JWT_SECRET =
   process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-/**
- * Generating JWT token for a user
- * @param {Object} user - User object (should not include password)
- * @returns {string} JWT token
- */
-function generateToken(user) {
+export function generateToken(user) {
   const payload = {
     userId: user._id.toString(),
     email: user.email,
@@ -22,12 +17,7 @@ function generateToken(user) {
   });
 }
 
-/**
- * Verifying JWT token and extracting user information
- * @param {string} token - JWT token
- * @returns {Object|null} Decoded token payload or null if invalid
- */
-function verifyToken(token) {
+export function verifyToken(token) {
   try {
     return jwt.verify(token, JWT_SECRET);
   } catch (error) {
@@ -35,11 +25,7 @@ function verifyToken(token) {
   }
 }
 
-/**
- * Authentication middleware - verifies JWT token from Authorization header
- * Adds req.user with user information if token is valid
- */
-const authenticate = async (req, res, next) => {
+export const authenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -59,7 +45,6 @@ const authenticate = async (req, res, next) => {
     }
 
     const token = parts[1];
-
 
     const decoded = verifyToken(token);
     if (!decoded) {
@@ -91,11 +76,7 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-/**
- * Optional authentication middleware - doesn't fail if no token is provided
- * Useful for routes that work with or without authentication
- */
-const optionalAuthenticate = async (req, res, next) => {
+export const optionalAuthenticate = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization;
 
@@ -105,7 +86,6 @@ const optionalAuthenticate = async (req, res, next) => {
       return next();
     }
 
- 
     const parts = authHeader.split(" ");
     if (parts.length !== 2 || parts[0] !== "Bearer") {
       req.user = null;
@@ -115,7 +95,6 @@ const optionalAuthenticate = async (req, res, next) => {
 
     const token = parts[1];
 
-  
     const decoded = verifyToken(token);
     if (!decoded) {
       req.user = null;
@@ -150,11 +129,4 @@ const optionalAuthenticate = async (req, res, next) => {
     req.userId = null;
     next();
   }
-};
-
-module.exports = {
-  authenticate,
-  optionalAuthenticate,
-  generateToken,
-  verifyToken,
 };

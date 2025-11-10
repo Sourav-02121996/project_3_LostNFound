@@ -1,11 +1,11 @@
-const express = require("express");
+import express from "express";
+import fs from "fs";
+import { ObjectId } from "mongodb";
+import { getDb } from "../config/db.js";
+import { authenticate } from "../middleware/auth.js";
+import upload from "../middleware/upload.js";
+
 const router = express.Router();
-const fs = require("fs");
-const { getDb } = require("../config/db");
-const { ObjectId } = require("mongodb");
-const { authenticate } = require("../middleware/auth");
-const upload = require("../middleware/upload");
-const path = require("path");
 
 // GET /api/items - Get all items with optional search and filters with pagination
 router.get("/", async (req, res, next) => {
@@ -55,15 +55,12 @@ router.get("/", async (req, res, next) => {
       ];
     }
 
-
     const pageNum = parseInt(page, 10);
     const limitNum = parseInt(limit, 10);
     const skip = (pageNum - 1) * limitNum;
 
-  
     const totalCount = await itemsCollection.countDocuments(filter);
 
-    // Get paginated items
     const items = await itemsCollection
       .find(filter)
       .sort({ createdAt: -1 })
@@ -123,7 +120,6 @@ router.post(
         req.body;
 
       if (!name || !location || !description || !dateFound || !category) {
-
         if (req.file) {
           try {
             fs.unlinkSync(req.file.path);
@@ -137,13 +133,10 @@ router.post(
       const db = await getDb();
       const itemsCollection = db.collection("Items");
 
-
       let imagePath = null;
       if (req.file) {
-
         imagePath = `/uploads/${req.file.filename}`;
       }
-
 
       const newItem = {
         userId: req.userId,
@@ -161,27 +154,24 @@ router.post(
       const result = await itemsCollection.insertOne(newItem);
       const itemId = result.insertedId.toString();
 
-
       try {
         const usersCollection = db.collection("Users");
         const notificationsCollection = db.collection("Notifications");
-
 
         const users = await usersCollection
           .find({ _id: { $ne: new ObjectId(req.userId) } })
           .toArray();
 
         if (users.length > 0) {
-
           const notifications = users.map((user) => ({
             userId: user._id.toString(),
-            itemId: itemId,
+            itemId,
             itemName: newItem.name,
             itemLocation: newItem.location,
             itemImage: newItem.image,
             itemCategory: newItem.category,
             dateFound: newItem.dateFound,
-            type: "new", // New item notification
+            type: "new",
             read: false,
             createdAt: new Date(),
           }));
@@ -192,7 +182,6 @@ router.post(
           );
         }
       } catch (notificationError) {
-
         console.error("Error creating notifications:", notificationError);
       }
 
@@ -228,7 +217,6 @@ router.put("/:id", authenticate, async (req, res, next) => {
     const db = await getDb();
     const itemsCollection = db.collection("Items");
 
-   
     const item = await itemsCollection.findOne({ _id: new ObjectId(id) });
     if (!item) {
       return res.status(404).json({ message: "Item not found." });
@@ -252,12 +240,10 @@ router.put("/:id", authenticate, async (req, res, next) => {
         category ||
         image !== undefined
       ) {
-        return res
-          .status(403)
-          .json({
-            message:
-              "You can only claim items. Only the owner can update other fields.",
-          });
+        return res.status(403).json({
+          message:
+            "You can only claim items. Only the owner can update other fields.",
+        });
       }
     }
 
@@ -371,4 +357,4 @@ router.get("/user/:userId", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;

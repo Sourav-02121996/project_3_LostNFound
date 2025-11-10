@@ -1,8 +1,16 @@
-const path = require("path");
-const fs = require("fs");
-const dotenv = require("dotenv");
+import path from "path";
+import fs from "fs";
+import dotenv from "dotenv";
+import express from "express";
+import { fileURLToPath } from "url";
 
-// Loading environment variables from the project root or backend folder
+import userRoutes from "./routes/users.js";
+import itemRoutes from "./routes/items.js";
+import notificationRoutes from "./routes/notifications.js";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const envPaths = [
   path.join(__dirname, "../.env"),
   path.join(__dirname, ".env"),
@@ -14,22 +22,13 @@ if (envPath) {
   dotenv.config();
 }
 
-const express = require("express");
-
-// Importing routes
-const userRoutes = require("./routes/users");
-const itemRoutes = require("./routes/items");
-const notificationRoutes = require("./routes/notifications");
-
 const app = express();
 const port = process.env.PORT || 4000;
 
 app.use(express.json());
 
-
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
 app.get("/health", (_req, res) => {
   res.json({ status: "ok" });
 });
@@ -61,7 +60,6 @@ if (fs.existsSync(frontendBuildPath)) {
 app.use((err, _req, res, _next) => {
   console.error(err);
 
-  // Handle multer errors (file upload errors)
   if (err.name === "MulterError") {
     if (err.code === "LIMIT_FILE_SIZE") {
       return res

@@ -1,9 +1,10 @@
-const express = require("express");
+import express from "express";
+import bcrypt from "bcryptjs";
+import { ObjectId } from "mongodb";
+import { getDb } from "../config/db.js";
+import { generateToken } from "../middleware/auth.js";
+
 const router = express.Router();
-const bcrypt = require("bcryptjs");
-const { getDb } = require("../config/db");
-const { ObjectId } = require("mongodb");
-const { generateToken } = require("../middleware/auth");
 
 const SALT_ROUNDS = 10;
 
@@ -80,10 +81,8 @@ router.post("/login", async (req, res, next) => {
       return res.status(401).json({ message: "Invalid email or password." });
     }
 
-
     const { passwordHash: _, ...userWithoutPassword } = user;
 
-   
     const token = generateToken(user);
 
     res.json({
@@ -174,11 +173,9 @@ router.put("/password", async (req, res, next) => {
     const { userId, currentPassword, newPassword } = req.body;
 
     if (!userId || !currentPassword || !newPassword) {
-      return res
-        .status(400)
-        .json({
-          message: "User ID, current password, and new password are required.",
-        });
+      return res.status(400).json({
+        message: "User ID, current password, and new password are required.",
+      });
     }
 
     if (!ObjectId.isValid(userId)) {
@@ -220,4 +217,4 @@ router.put("/password", async (req, res, next) => {
   }
 });
 
-module.exports = router;
+export default router;
