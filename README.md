@@ -174,6 +174,6 @@ PASSWORD: 'Password123!'
 
 ## AI Usage
 
--We used Cursor AI pro , it is a generative AI tool that uses models like Claude-4-Sonnet, Gemini Pro 2.5 and GPT-4.1 depending on what user manually selects. 
--We used cursor AI to style our application. 
--Prompt: Please style the <screen-name>/<component-name> file and keep their custom css in separate files specific to their names. Keep the styling modern and it should look like a modern application. 
+We used Cursor AI pro , it is a generative AI tool that uses models like Claude-4-Sonnet, Gemini Pro 2.5 and GPT-4.1 depending on what user manually selects. <br>
+We used cursor AI to style our application. <br>
+Prompt: Please style the <screen-name>/<component-name> file and keep their custom css in separate files specific to their names. Keep the styling modern and it should look like a modern application. 
