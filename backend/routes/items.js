@@ -1,3 +1,6 @@
+//The backend accepts `dateFound` without validation. Invalid dates can break sorting and filtering operations. Consider validating it with `Date.parse()` or a date library.
+
+
 import express from "express";
 import fs from "fs";
 import { ObjectId } from "mongodb";

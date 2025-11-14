@@ -1,3 +1,7 @@
+// 1. Searching triggers API calls on every keystroke. Adding a debounce (300–500ms) will significantly reduce unnecessary requests and improve performance.
+// 2. Location/category dropdowns are computed from currently displayed items. This hides valid filter values if they’re not in the current page. Consider prefetching all distinct values.
+
+
 import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import {

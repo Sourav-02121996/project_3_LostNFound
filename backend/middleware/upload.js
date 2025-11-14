@@ -1,3 +1,5 @@
+//When `fileFilter` rejects an upload (wrong file type), multer may leave behind the temporary file. Consider deleting the rejected file to prevent storage buildup.
+
 import multer from "multer";
 import path from "path";
 import fs from "fs";

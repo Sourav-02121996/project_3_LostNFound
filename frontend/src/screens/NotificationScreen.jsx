@@ -1,3 +1,7 @@
+// 1. Several icon-only buttons and placeholders lack `aria-label`. This makes them invisible to screen readers. Adding accessibility labels improves usability.
+// 2. If the token expires, these actions fail silently. Consider redirecting the user to login on a 401 response.
+
+
 import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";

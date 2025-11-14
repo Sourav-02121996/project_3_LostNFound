@@ -1,3 +1,6 @@
+//When updating a profile, if the user changes their email, the backend does not check whether the new email already exists. This can cause duplicate email accounts and login conflicts.
+
+
 import express from "express";
 import bcrypt from "bcryptjs";
 import { ObjectId } from "mongodb";

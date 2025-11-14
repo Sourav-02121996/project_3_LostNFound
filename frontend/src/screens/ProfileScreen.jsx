@@ -1,3 +1,6 @@
+//This component handles multiple responsibilities: auth, profile details, password changes, posts, and modals. Splitting it into smaller components improves readability and maintainability.
+
+
 import React, { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";

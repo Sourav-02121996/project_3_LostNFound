@@ -1,3 +1,7 @@
+//The JWT_SECRET fallback value is weak (`"your-secret-key-change-in-production"`). Instead of using a default, the server should require a strong secret and throw an error if it is missing.
+//Both middleware functions repeat token parsing and user validation logic. Extracting shared functionality into a helper would make the code cleaner and easier to maintain.
+
+
 import jwt from "jsonwebtoken";
 import { ObjectId } from "mongodb";
 import { getDb } from "../config/db.js";

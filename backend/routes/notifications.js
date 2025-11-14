@@ -1,3 +1,5 @@
+//The notification routes do not use authentication middleware, which means anyone can fetch or delete notifications for any user by simply passing a userId. These routes should be protected using `authenticate` to prevent unauthorized access.
+
 import express from "express";
 import { ObjectId } from "mongodb";
 import { getDb } from "../config/db.js";

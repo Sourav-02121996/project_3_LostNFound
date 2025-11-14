@@ -1,3 +1,6 @@
+//Several icon-only buttons and placeholders lack `aria-label`. This makes them invisible to screen readers. Adding accessibility labels improves usability.
+
+
 import React, { useState, useEffect } from "react";
 import PropTypes from "prop-types";
 import { useParams, useNavigate } from "react-router-dom";

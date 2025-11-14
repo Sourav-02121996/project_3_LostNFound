@@ -1,3 +1,6 @@
+//Several icon-only buttons and placeholders lack `aria-label`. This makes them invisible to screen readers. Adding accessibility labels improves usability.
+
+
 import React from "react";
 import { Navbar, Nav, Container } from "react-bootstrap";
 import { FaUser, FaBell } from "react-icons/fa";
