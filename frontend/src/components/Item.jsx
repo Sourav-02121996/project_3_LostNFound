@@ -35,7 +35,7 @@ const Item = ({ item }) => {
           </Link>
         </Card.Title>
         <Card.Text className="item-location">
-          <h3>{item.location}</h3>
+          <span className="item-location-text">{item.location}</span>
         </Card.Text>
       </Card.Body>
     </Card>

@@ -84,7 +84,9 @@
   flex-shrink: 0;
 }
 
-.item-location h3 {
+
+.item-location-text {
+  display: block;
   font-size: 1rem;
   font-weight: 500;
   color: var(--muted-text-color);

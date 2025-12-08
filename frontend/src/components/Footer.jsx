@@ -18,16 +18,16 @@ const Footer = () => {
       <Container className="py-4">
         <Row>
           <Col md={4} className="mb-4 mb-md-0">
-            <h5 className="footer-title">
+            <h2 className="footer-title">
               <Logo className="footer-logo" />
-            </h5>
+            </h2>
             <p className="footer-description">
               Helping you find lost items and reunite with your belongings.
             </p>
           </Col>
 
           <Col md={4} className="mb-4 mb-md-0">
-            <h5 className="footer-title">Contact Us</h5>
+            <h2 className="footer-title">Contact Us</h2>
             <div className="footer-contact">
               <div className="contact-item">
                 <FaEnvelope className="contact-icon" />
@@ -47,7 +47,7 @@ const Footer = () => {
           </Col>
 
           <Col md={4}>
-            <h5 className="footer-title">Follow Us</h5>
+            <h2 className="footer-title">Follow Us</h2>
             <div className="footer-social">
               <a
                 href="https://facebook.com"
