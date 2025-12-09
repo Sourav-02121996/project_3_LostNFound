@@ -31,6 +31,28 @@ const noopStorage = {
   removeItem: () => {},
 };
 
+const normalizeUser = (rawUser) => {
+  if (!rawUser || typeof rawUser !== "object") return null;
+
+  const rawId = rawUser._id;
+  let normalizedId = "";
+
+  if (typeof rawId === "string") {
+    normalizedId = rawId;
+  } else if (rawId && typeof rawId === "object") {
+    if (typeof rawId.$oid === "string") {
+      normalizedId = rawId.$oid;
+    } else if (typeof rawId.toString === "function") {
+      normalizedId = rawId.toString();
+    }
+  }
+
+  return {
+    ...rawUser,
+    _id: normalizedId || "",
+  };
+};
+
 const ProfileScreen = ({
   apiBaseUrl = API_BASE_URL,
   fetchFn = fetch,
@@ -62,7 +84,7 @@ const ProfileScreen = ({
   
   useEffect(() => {
     const token = storageRef.getItem("token");
-    const userData = storageRef.getItem("user");
+    const storedUser = storageRef.getItem("user");
 
     if (!token) {
       navigate("/login");
@@ -71,42 +93,34 @@ const ProfileScreen = ({
 
     setIsAuthenticated(true);
 
-    if (userData) {
+    let parsedUser = null;
+    if (storedUser) {
       try {
-        setUser(JSON.parse(userData));
+        parsedUser = normalizeUser(JSON.parse(storedUser));
+        setUser(parsedUser);
       } catch (err) {
         console.error("Error parsing user data:", err);
       }
     }
 
-    
     const fetchUserItems = async () => {
       try {
         setLoadingPosts(true);
-        
-        let userId = null;
-        if (userData) {
-          try {
-            const parsedUser = JSON.parse(userData);
-            userId = parsedUser._id;
-            setUser(parsedUser);
-          } catch (parseErr) {
-            console.error("Error parsing user data:", parseErr);
-          }
+
+        const userId = parsedUser?._id;
+        if (!userId) {
+          console.error("Could not determine user ID from localStorage");
+          return;
         }
 
-        if (userId) {
-          const response = await fetchFn(
-            `${apiBaseUrl}/api/items/user/${userId}`
-          );
-          if (response.ok) {
-            const items = await response.json();
-            setUserPosts(items);
-          } else {
-            console.error("Failed to fetch user items:", response.status);
-          }
+        const response = await fetchFn(
+          `${apiBaseUrl}/api/items/user/${userId}`
+        );
+        if (response.ok) {
+          const items = await response.json();
+          setUserPosts(items);
         } else {
-          console.error("Could not determine user ID from localStorage");
+          console.error("Failed to fetch user items:", response.status);
         }
       } catch (err) {
         console.error("Error fetching user items:", err);
@@ -120,8 +134,10 @@ const ProfileScreen = ({
   }, [navigate, apiBaseUrl, fetchFn, storageRef]);
 
   useEffect(() => {
-    setPhoneInput(user?.phone || "");
-  }, [user]);
+    if (!editingPhone) {
+      setPhoneInput(user?.phone || "");
+    }
+  }, [user, editingPhone]);
 
   const handleStartEditPhone = () => {
     setPhoneInput(user?.phone || "");
@@ -149,17 +165,29 @@ const ProfileScreen = ({
     }
 
     const token = storageRef.getItem("token");
-    const userData = storageRef.getItem("user");
-    if (!userData) {
-      alert("Unable to update phone: no user data.");
+    if (!token) {
+      alert("You must be logged in to update your phone number.");
       return;
     }
-    let parsedUser;
-    try {
-      parsedUser = JSON.parse(userData);
-    } catch (err) {
-      console.error("Error parsing user data:", err);
-      alert("Unable to update phone: invalid user data.");
+
+    let activeUser = user ? normalizeUser(user) : null;
+    if (!activeUser) {
+      const storedUser = storageRef.getItem("user");
+      if (!storedUser) {
+        alert("Unable to update phone: no user profile found.");
+        return;
+      }
+      try {
+        activeUser = normalizeUser(JSON.parse(storedUser));
+      } catch (err) {
+        console.error("Error parsing user data:", err);
+        alert("Unable to update phone: invalid user data.");
+        return;
+      }
+    }
+
+    if (!activeUser?._id) {
+      alert("Unable to update phone: missing user information.");
       return;
     }
 
@@ -172,7 +200,7 @@ const ProfileScreen = ({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          userId: parsedUser._id,
+          userId: activeUser._id,
           phone: trimmed,
         }),
       });
@@ -182,7 +210,7 @@ const ProfileScreen = ({
         throw new Error(result?.message || "Failed to update phone.");
       }
 
-      const updatedUser = { ...parsedUser, phone: trimmed };
+      const updatedUser = { ...activeUser, phone: trimmed };
       try {
         storageRef.setItem("user", JSON.stringify(updatedUser));
       } catch (err) {
@@ -394,41 +422,56 @@ const ProfileScreen = ({
                       <span className="account-info-label">Phone</span>
                       <span className="account-info-value phone-value">
                         {editingPhone ? (
-                          <Form onSubmit={handleSavePhone} className="d-flex align-items-center gap-2">
+                          <Form
+                            onSubmit={handleSavePhone}
+                            className="phone-edit-form"
+                          >
                             <Form.Control
                               type="tel"
                               value={phoneInput}
                               onChange={(e) => setPhoneInput(e.target.value)}
                               placeholder="Enter phone number"
-                              className="me-2"
-                              style={{ maxWidth: "220px" }}
+                              className="phone-input"
                               aria-label="Phone number"
                             />
-                            <Button
-                              type="submit"
-                              size="sm"
-                              variant="primary"
-                              aria-label="Save phone number"
-                              disabled={
-                                phoneSaving ||
-                                (phoneInput || "").trim() === "" ||
-                                (phoneInput || "").trim() === (user?.phone || "")
-                              }
-                            >
-                              {phoneSaving ? <Spinner as="span" animation="border" size="sm" /> : "Save"}
-                            </Button>
-                            <Button
-                              type="button"
-                              size="sm"
-                              variant="outline-secondary"
-                              onClick={handleCancelEditPhone}
-                              aria-label="Cancel phone edit"
-                            >
-                              Cancel
-                            </Button>
+                            <div className="phone-edit-actions">
+                              <Button
+                                type="submit"
+                                size="sm"
+                                variant="primary"
+                                className="phone-save-btn"
+                                aria-label="Save phone number"
+                                disabled={
+                                  phoneSaving ||
+                                  (phoneInput || "").trim() === "" ||
+                                  (phoneInput || "").trim() ===
+                                    (user?.phone || "")
+                                }
+                              >
+                                {phoneSaving ? (
+                                  <Spinner
+                                    as="span"
+                                    animation="border"
+                                    size="sm"
+                                  />
+                                ) : (
+                                  "Save"
+                                )}
+                              </Button>
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant="outline-secondary"
+                                className="phone-cancel-btn"
+                                onClick={handleCancelEditPhone}
+                                aria-label="Cancel phone edit"
+                              >
+                                Cancel
+                              </Button>
+                            </div>
                           </Form>
                         ) : (
-                          <div className="d-flex align-items-center gap-2">
+                          <div className="phone-view-display">
                             <span>{user?.phone || "Not available"}</span>
                             <Button
                               size="sm"
