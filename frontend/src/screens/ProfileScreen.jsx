@@ -55,6 +55,9 @@ const ProfileScreen = ({
     newPassword: "",
     confirmPassword: "",
   });
+  const [editingPhone, setEditingPhone] = useState(false);
+  const [phoneInput, setPhoneInput] = useState("");
+  const [phoneSaving, setPhoneSaving] = useState(false);
 
   
   useEffect(() => {
@@ -115,6 +118,10 @@ const ProfileScreen = ({
 
     fetchUserItems();
   }, [navigate, apiBaseUrl, fetchFn, storageRef]);
+
+  useEffect(() => {
+    setPhoneInput(user?.phone || "");
+  }, [user]);
 
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
@@ -307,12 +314,111 @@ const ProfileScreen = ({
                         <span className="account-info-value">{user.nuid}</span>
                       </div>
                     )}
-                    {user?.phone && (
-                      <div className="account-info-row">
-                        <span className="account-info-label">Phone</span>
-                        <span className="account-info-value">{user.phone}</span>
-                      </div>
-                    )}
+                    <div className="account-info-row phone-row">
+                      <span className="account-info-label">Phone</span>
+                      <span className="account-info-value phone-value">
+                        {editingPhone ? (
+                          <div className="d-flex align-items-center gap-2">
+                            <Form.Control
+                              type="tel"
+                              value={phoneInput}
+                              onChange={(e) => setPhoneInput(e.target.value)}
+                              placeholder="Enter phone number"
+                              className="me-2"
+                              style={{ maxWidth: "220px" }}
+                            />
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              onClick={async () => {
+                                // Save phone
+                                const token = storageRef.getItem("token");
+                                const userData = storageRef.getItem("user");
+                                if (!userData) {
+                                  alert("Unable to update phone: no user data.");
+                                  return;
+                                }
+                                let parsedUser;
+                                try {
+                                  parsedUser = JSON.parse(userData);
+                                } catch (err) {
+                                  console.error("Error parsing user data:", err);
+                                  alert("Unable to update phone: invalid user data.");
+                                  return;
+                                }
+
+                                try {
+                                  setPhoneSaving(true);
+                                  const response = await fetchFn(
+                                    `${apiBaseUrl}/api/users/profile`,
+                                    {
+                                      method: "PUT",
+                                      headers: {
+                                        "Content-Type": "application/json",
+                                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+                                      },
+                                      body: JSON.stringify({
+                                        userId: parsedUser._id,
+                                        phone: phoneInput,
+                                      }),
+                                    }
+                                  );
+
+                                  const result = await response.json().catch(() => null);
+                                  if (!response.ok) {
+                                    throw new Error(result?.message || "Failed to update phone.");
+                                  }
+
+                                  const updatedUser = { ...parsedUser, phone: phoneInput };
+                                  try {
+                                    storageRef.setItem("user", JSON.stringify(updatedUser));
+                                  } catch (err) {
+                                    console.error("Error saving user to storage:", err);
+                                  }
+                                  setUser(updatedUser);
+                                  setEditingPhone(false);
+                                  alert("Phone number updated successfully.");
+                                } catch (err) {
+                                  console.error("Error updating phone:", err);
+                                  alert(err.message || "Unable to update phone at the moment.");
+                                } finally {
+                                  setPhoneSaving(false);
+                                }
+                              }}
+                              disabled={phoneSaving}
+                            >
+                              {phoneSaving ? (
+                                <Spinner as="span" animation="border" size="sm" />
+                              ) : (
+                                "Save"
+                              )}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline-secondary"
+                              onClick={() => {
+                                setEditingPhone(false);
+                                setPhoneInput(user?.phone || "");
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="d-flex align-items-center gap-2">
+                            <span>{user?.phone || "Not available"}</span>
+                            <Button
+                              size="sm"
+                              variant="link"
+                              onClick={() => setEditingPhone(true)}
+                              className="edit-phone-btn p-0 ms-2"
+                            >
+                              <FaEdit />
+                            </Button>
+                          </div>
+                        )}
+                      </span>
+                    </div>
                   </div>
                 </div>
                 <div className="profile-section">
