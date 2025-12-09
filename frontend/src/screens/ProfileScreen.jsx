@@ -123,6 +123,82 @@ const ProfileScreen = ({
     setPhoneInput(user?.phone || "");
   }, [user]);
 
+  const handleStartEditPhone = () => {
+    setPhoneInput(user?.phone || "");
+    setEditingPhone(true);
+  };
+
+  const handleCancelEditPhone = () => {
+    setPhoneInput(user?.phone || "");
+    setEditingPhone(false);
+  };
+
+  const handleSavePhone = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+
+    const trimmed = (phoneInput || "").trim();
+    if (!trimmed) {
+      alert("Please enter a phone number.");
+      return;
+    }
+
+    if (trimmed === (user?.phone || "")) {
+      // nothing to do
+      setEditingPhone(false);
+      return;
+    }
+
+    const token = storageRef.getItem("token");
+    const userData = storageRef.getItem("user");
+    if (!userData) {
+      alert("Unable to update phone: no user data.");
+      return;
+    }
+    let parsedUser;
+    try {
+      parsedUser = JSON.parse(userData);
+    } catch (err) {
+      console.error("Error parsing user data:", err);
+      alert("Unable to update phone: invalid user data.");
+      return;
+    }
+
+    try {
+      setPhoneSaving(true);
+      const response = await fetchFn(`${apiBaseUrl}/api/users/profile`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          userId: parsedUser._id,
+          phone: trimmed,
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+      if (!response.ok) {
+        throw new Error(result?.message || "Failed to update phone.");
+      }
+
+      const updatedUser = { ...parsedUser, phone: trimmed };
+      try {
+        storageRef.setItem("user", JSON.stringify(updatedUser));
+      } catch (err) {
+        console.error("Error saving user to storage:", err);
+      }
+      setUser(updatedUser);
+      setEditingPhone(false);
+      alert("Phone number updated successfully.");
+    } catch (err) {
+      console.error("Error updating phone:", err);
+      alert(err.message || "Unable to update phone at the moment.");
+    } finally {
+      setPhoneSaving(false);
+    }
+  };
+
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
     setPasswordData({
@@ -318,7 +394,7 @@ const ProfileScreen = ({
                       <span className="account-info-label">Phone</span>
                       <span className="account-info-value phone-value">
                         {editingPhone ? (
-                          <div className="d-flex align-items-center gap-2">
+                          <Form onSubmit={handleSavePhone} className="d-flex align-items-center gap-2">
                             <Form.Control
                               type="tel"
                               value={phoneInput}
@@ -326,92 +402,40 @@ const ProfileScreen = ({
                               placeholder="Enter phone number"
                               className="me-2"
                               style={{ maxWidth: "220px" }}
+                              aria-label="Phone number"
                             />
                             <Button
+                              type="submit"
                               size="sm"
                               variant="primary"
-                              onClick={async () => {
-                                // Save phone
-                                const token = storageRef.getItem("token");
-                                const userData = storageRef.getItem("user");
-                                if (!userData) {
-                                  alert("Unable to update phone: no user data.");
-                                  return;
-                                }
-                                let parsedUser;
-                                try {
-                                  parsedUser = JSON.parse(userData);
-                                } catch (err) {
-                                  console.error("Error parsing user data:", err);
-                                  alert("Unable to update phone: invalid user data.");
-                                  return;
-                                }
-
-                                try {
-                                  setPhoneSaving(true);
-                                  const response = await fetchFn(
-                                    `${apiBaseUrl}/api/users/profile`,
-                                    {
-                                      method: "PUT",
-                                      headers: {
-                                        "Content-Type": "application/json",
-                                        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-                                      },
-                                      body: JSON.stringify({
-                                        userId: parsedUser._id,
-                                        phone: phoneInput,
-                                      }),
-                                    }
-                                  );
-
-                                  const result = await response.json().catch(() => null);
-                                  if (!response.ok) {
-                                    throw new Error(result?.message || "Failed to update phone.");
-                                  }
-
-                                  const updatedUser = { ...parsedUser, phone: phoneInput };
-                                  try {
-                                    storageRef.setItem("user", JSON.stringify(updatedUser));
-                                  } catch (err) {
-                                    console.error("Error saving user to storage:", err);
-                                  }
-                                  setUser(updatedUser);
-                                  setEditingPhone(false);
-                                  alert("Phone number updated successfully.");
-                                } catch (err) {
-                                  console.error("Error updating phone:", err);
-                                  alert(err.message || "Unable to update phone at the moment.");
-                                } finally {
-                                  setPhoneSaving(false);
-                                }
-                              }}
-                              disabled={phoneSaving}
+                              aria-label="Save phone number"
+                              disabled={
+                                phoneSaving ||
+                                (phoneInput || "").trim() === "" ||
+                                (phoneInput || "").trim() === (user?.phone || "")
+                              }
                             >
-                              {phoneSaving ? (
-                                <Spinner as="span" animation="border" size="sm" />
-                              ) : (
-                                "Save"
-                              )}
+                              {phoneSaving ? <Spinner as="span" animation="border" size="sm" /> : "Save"}
                             </Button>
                             <Button
+                              type="button"
                               size="sm"
                               variant="outline-secondary"
-                              onClick={() => {
-                                setEditingPhone(false);
-                                setPhoneInput(user?.phone || "");
-                              }}
+                              onClick={handleCancelEditPhone}
+                              aria-label="Cancel phone edit"
                             >
                               Cancel
                             </Button>
-                          </div>
+                          </Form>
                         ) : (
                           <div className="d-flex align-items-center gap-2">
                             <span>{user?.phone || "Not available"}</span>
                             <Button
                               size="sm"
                               variant="link"
-                              onClick={() => setEditingPhone(true)}
+                              onClick={handleStartEditPhone}
                               className="edit-phone-btn p-0 ms-2"
+                              aria-label="Edit phone"
                             >
                               <FaEdit />
                             </Button>
