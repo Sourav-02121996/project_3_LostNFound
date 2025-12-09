@@ -25,6 +25,8 @@ const LostItemsScreen = ({ apiBaseUrl = API_BASE_URL, fetchFn = fetch }) => {
     dateFound: "",
     category: "",
   });
+  const [allLocations, setAllLocations] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pagination, setPagination] = useState({
     totalPages: 1,
@@ -82,19 +84,61 @@ const LostItemsScreen = ({ apiBaseUrl = API_BASE_URL, fetchFn = fetch }) => {
     currentPage,
   ]);
 
+  // Fetch full list of locations and categories once so dropdowns
+  // always show every option even when filtered results are limited.
+  useEffect(() => {
+    const fetchAllOptions = async () => {
+      try {
+        const params = new URLSearchParams();
+        params.append("status", "searching");
+        params.append("limit", "1000");
+
+        const response = await fetchFn(
+          `${apiBaseUrl}/api/items?${params.toString()}`
+        );
+        if (!response.ok) {
+          throw new Error("Failed to fetch options");
+        }
+        const data = await response.json();
+        let itemsData = [];
+        if (Array.isArray(data)) {
+          itemsData = data;
+        } else {
+          itemsData = data.items || [];
+        }
+
+        const uniqueLocations = [
+          ...new Set(itemsData.map((item) => item.location).filter(Boolean)),
+        ].sort();
+        const uniqueCategories = [
+          ...new Set(itemsData.map((item) => item.category).filter(Boolean)),
+        ].sort();
+
+        setAllLocations(uniqueLocations);
+        setAllCategories(uniqueCategories);
+      } catch (err) {
+        console.error("Error fetching filter options:", err);
+      }
+    };
+
+    fetchAllOptions();
+  }, [apiBaseUrl, fetchFn]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, filters.location, filters.dateFound, filters.category]);
 
   const locations = useMemo(() => {
+    if (allLocations && allLocations.length > 0) return allLocations;
     const uniqueLocations = [...new Set(items.map((item) => item.location))];
     return uniqueLocations.sort();
-  }, [items]);
+  }, [allLocations, items]);
 
   const categories = useMemo(() => {
+    if (allCategories && allCategories.length > 0) return allCategories;
     const uniqueCategories = [...new Set(items.map((item) => item.category))];
     return uniqueCategories.sort();
-  }, [items]);
+  }, [allCategories, items]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
