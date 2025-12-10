@@ -606,7 +606,7 @@ const ProfileScreen = ({
                                         : "warning"
                                     }
                                     size="sm"
-                                    className="status-btn"
+                                    className={`status-btn ${post.status === "searching" ? "searching-status" : "claimed-status"}`}
                                     onClick={() => handleStatusChange(post._id)}
                                   >
                                     {post.status === "searching" ? (
