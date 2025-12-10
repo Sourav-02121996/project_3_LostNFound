@@ -174,7 +174,7 @@ const LostItemsScreen = ({ apiBaseUrl = API_BASE_URL, fetchFn = fetch }) => {
         <Card className="filter-card">
           <Card.Body className="p-4">
             <div className="filter-header">
-              <h3 className="filter-title">Filter Items</h3>
+              <h2 className="filter-title">Filter Items</h2>
               {hasActiveFilters && (
                 <Button
                   variant="outline-secondary"

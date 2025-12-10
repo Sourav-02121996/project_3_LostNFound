@@ -392,10 +392,10 @@ const ProfileScreen = ({
             <Card className="profile-card">
               <Card.Body className="p-4">
                 <div className="profile-section account-overview">
-                  <h3 className="section-title">
+                  <h2 className="section-title">
                     <FaUserCircle className="section-icon" />
                     Account Details
-                  </h3>
+                  </h2>
                   <p className="section-description">
                     Keep your contact information up to date.
                   </p>
@@ -606,7 +606,7 @@ const ProfileScreen = ({
                                         : "warning"
                                     }
                                     size="sm"
-                                    className="status-btn"
+                                    className={`status-btn ${post.status === "searching" ? "searching-status" : "claimed-status"}`}
                                     onClick={() => handleStatusChange(post._id)}
                                   >
                                     {post.status === "searching" ? (
