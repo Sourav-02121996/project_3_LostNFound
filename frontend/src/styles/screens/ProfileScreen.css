@@ -338,6 +338,25 @@
   transition: all 0.3s ease;
 }
 
+/* Accessible colors for status buttons */
+.profile-screen .status-btn {
+  background-color: #1a7f37; /* Darker green for "claimed" - passes WCAG AA */
+  border-color: #1a7f37;
+  color: white;
+}
+
+.profile-screen .status-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  background-color: #145c29; /* Even darker on hover */
+  border-color: #145c29;
+}
+
+/* Keep the existing hover styles for both buttons */
+.profile-screen .delete-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
 .profile-screen .status-btn:hover,
 .profile-screen .delete-btn:hover {
   transform: translateY(-2px);
